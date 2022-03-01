@@ -1,6 +1,5 @@
 import mongoose from 'mongoose'
 import { Deck } from '../models/Deck.js'
-
 import decks from '../testData/decks.json'
 import cards from '../testData/cards.json'
 
