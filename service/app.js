@@ -2,14 +2,16 @@ import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
 
-import { Deck } from './models/Deck.js'
+import decksRouter from './routers/decks.js'
+import usersRouter from './routers/users.js'
+import authRouter, { verifyToken } from './routers/auth.js'
 
 const app = express()
 const port = 8000
 
 // Connect to MongoDB
 
-const connectionString = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.f58kq.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
+const connectionString = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@crit-cluster.bpw1p.mongodb.net/notoriety?retryWrites=true&w=majority`
 try {
   await mongoose.connect(connectionString)
 } catch (err) {
@@ -18,81 +20,43 @@ try {
 
 // Middleware
 
-const exampleMiddleware = (req, res, next) => {
-  console.log('example middleware')
-  next()
-}
-
 app.use(cors())
 app.use(express.json())
-app.use(exampleMiddleware)
 
 // Routes
 
-app.get('/', (req, res) => {
-  res.send('Hello, world!')
-})
-
-app.get('/decks/:id/cards', async (req, res) => {
-  const limit = req.query.limit
-  const deck = await Deck.findById(req.params.id)
-  if (deck) {
-    res.send(deck.cards.slice(0, 5))
-  } else {
-    res.sendStatus(404)
-  }
-})
-
-const cardsById = async (req, res) => {
-  const card = await Deck.findOne({
-    'cards._id': req.params.id
-  })
-  res.status(200).send(card)
-}
-
-app.get('/cards/:id', cardsById)
-
-const isUrl = (value) => {
-  const re = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/
-  return re.test(value)
-}
-
-app.post('/cards', async (req, res) => {
-  const cardRequest = req.body
-  
-  if ((!cardRequest.frontImage && !cardRequest.frontText) || 
-    (!cardRequest.backImage && !cardRequest.backText)) {
-    res.status(400).send('Card data incomplete')
-  }
-
-  if ((frontImage && !isUrl(frontImage)) || (backImage && !isUrl(backImage))) {
-    res.status(400).send('Image fields must be valid URLs')
-  }
-
-  if (!cardRequest.deckId) {
-    res.status(400).send('Deck ID is required')
-  }
-
-  try {
-    const deck = await Deck.findById(cardRequest.deckId)
-    if (deck) {
-      deck.cards.push({
-        frontImage: cardRequest.frontImage,
-        frontText: cardRequest.frontText,
-        backImage: cardRequest.backImage,
-        backText: cardRequest.backText
-      })
-      await deck.save()
-      res.sendStatus(204)
-    } else {
-      res.sendStatus(404)
-    }
-  } catch (err) {
-    console.log(`error in creating card ${err}`)
-    res.sendStatus(502)
-  }
-})
+app.use('/auth', authRouter)
+app.use('/decks', verifyToken, decksRouter)
+app.use('/users', verifyToken, usersRouter)
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`)
 })
+
+/**
+ * AS ALWAYS you will create a week9 branch to work on. You may work from the
+ * current state of main in my repo. Incorrect submissions will lose points this
+ * week.
+ *
+ * Each user should be assigned a role, and each role should be allowed to do
+ * different things. There are many ways to handle roles and permissions, but
+ * we'll keep it as simple as possible. Every call that should be restricted
+ * should check the user and their role before allowing them to complete the
+ * operation.
+ *
+ * Every call that needs to be restricted to certain users should require a
+ * token to be authorized. Add a 'role' property to the user model limited to
+ * one of three values: Admin, SuperUser, User.
+ * - An admin should be able to call every route and without being rejected.
+ * - A superuser should be able to get all users and users by id, add, update
+ * and delete other users' decks and cards, but should not have permission to
+ * update or delete OTHER user objects. They may update and delete their own
+ * user profile.
+ * - A user should only have access to create, update and delete their own cards
+ * and decks. They should be able to update their own user data but NOT to
+ * delete their own user account. They can choose to deactivate their own
+ * account, but cannot reactivate it without admin assistance
+ *
+ * Based on these rules, you should restrict each route in the app that would be
+ * affected by permissions
+ */

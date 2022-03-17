@@ -1,42 +1,18 @@
-import React, { useState } from "react"
+import React, {useState} from "react"
 import { Button, Stack, TextField } from "@mui/material"
 import axios from 'axios'
 
 const CreateFlashcard = ({ userId, deckId }) => {
+  // how can we use state here to make sure we're validating info
   console.log(`[CreateFlashcard] deckId is ${deckId}`)
   const [formValue, setFormValue] = useState({})
-  const [errors, setErrors] = useState({
-    'frontImage': "",
-    'frontText': "",
-    'backImage': "",
-    'backText': ""
-  })
-
-  function validateProperty(fieldValue) {
-    console.log('validating')
-    const fieldValueTrimmed = fieldValue.trim()
-    if (fieldValueTrimmed === '') {
-      return "Cannot be blank"
-    }
-    return ''
-  }
 
   const handleChange = (event) => {
     event.preventDefault()
     console.log("[CreateFlashcard] onChange ", event)
-    const validationResult = validateProperty(event.target.value)
-    if (validationResult === "") {
-      console.log('valid')
-      const currentValues = Object.assign({}, formValue);    
-      currentValues[event.target.name] = event.target.value
-      setFormValue(currentValues)
-    } else {
-      console.log('error: ')
-    }
-    const currentErrors = Object.assign({}, errors);
-    currentErrors[event.target.name] = validationResult
-    console.log('current error messages', currentErrors)
-    setErrors(currentErrors)
+    const currentValues = formValue
+    currentValues[event.target.name] = event.target.value
+    setFormValue(currentValues)
   }
   
   const handleSubmit = async (event) => {
@@ -62,9 +38,7 @@ const CreateFlashcard = ({ userId, deckId }) => {
         name="frontImage"
         onChange={handleChange}
         autoFocus
-        error={errors.frontImage}
       />
-      <div>{errors.frontImage}</div>
       <TextField
         margin="normal"
         required
@@ -73,9 +47,7 @@ const CreateFlashcard = ({ userId, deckId }) => {
         label="Front Text"
         id="frontText"
         onChange={handleChange}
-        error={errors.frontText}
       />
-      <div>{errors.frontText}</div>
       <TextField
         margin="normal"
         required
@@ -84,9 +56,7 @@ const CreateFlashcard = ({ userId, deckId }) => {
         label="Back Image"
         name="backImage"
         onChange={handleChange}
-        error={errors.backImage} 
       />
-      <div>{errors.backImage}</div>
       <TextField
         margin="normal"
         required
@@ -95,9 +65,7 @@ const CreateFlashcard = ({ userId, deckId }) => {
         label="Back Text"
         id="backText"
         onChange={handleChange}
-        error={errors.backText} 
       />
-      <div>{errors.backText}</div>
       <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
         Submit
       </Button>
