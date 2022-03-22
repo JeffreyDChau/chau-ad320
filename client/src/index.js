@@ -20,7 +20,7 @@ ReactDOM.render(
         <Topbar />
         <Routes>
           <Route path="/" element={<Welcome />} />
-          {/* Addignment: Add a route for /user to redirect to from Login */}
+          <Route path="/user" element={<User />} />{/* Addignment: Add a route for /user to redirect to from Login */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/app" element={<Protected><App /></Protected>} />
@@ -31,7 +31,6 @@ ReactDOM.render(
   </React.StrictMode>,
   document.getElementById('root')
 );
-
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals

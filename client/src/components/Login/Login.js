@@ -25,7 +25,8 @@ const Login = () => {
   }
 
   if (auth) {
-    return <Navigate to={source} />
+    //return <Navigate to={source} />
+    return <Navigate to='/user' />
   }
 
   return (
